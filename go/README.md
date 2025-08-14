@@ -91,8 +91,11 @@ for _, data := range response.Data {
 
 ## API参考
 
-详细API文档请参考[API文档](./API.md)
+详细API文档请参考[API文档](../API.md)
 
 ## 示例
 
-更多示例请参考[examples](./examples/)目录
+更多示例请参考[examples](./examples/)目录:
+
+- [Cost V2 API 示例](./examples/cost_v2_example.go) - 包含多个使用Cost V2 API的示例
+- [Allocation API 示例](./examples/allocation_example.go) - 展示如何使用Allocation API

@@ -1,43 +1,39 @@
-/**
- * Allocation API 使用示例
- */
+const { Client, Config } = require('../src/client');
 
-const { Client, Config, AllocationRequest } = require('../src');
-
-/**
- * 示例: 获取某个DaemonSet昨天分摊集群账单的费用
- */
-async function example(client) {
-    console.log('=== 获取DaemonSet业务分摊账单 ===');
-    
-    const request = new AllocationRequest({
-        window: "yesterday",
-        filter: 'namespace:"kube-system"+controllerKind:"DaemonSet"+label[app]:"terway-eniip"'
-    });
-    
+async function main() {
     try {
-        const response = await client.allocation.getAllocation(request);
-        
-        response.data.forEach(data => {
-            Object.entries(data).forEach(([name, allocation]) => {
-                console.log(`Name: ${name}, Allocation Cost: ${allocation.cost.toFixed(3)}, CPU Request: ${allocation.cpuCoreRequestAverage.toFixed(2)}, Memory Request: ${allocation.ramByteRequestAverage.toFixed(0)}`);
-            });
-        });
+        // 创建客户端
+        const config = new Config();
+        config.endpoint = 'http://127.0.0.1:8080';
+        const client = new Client(config);
+
+        // 示例: 获取某个DaemonSet昨天分摊集群账单的费用
+        console.log('=== 获取DaemonSet业务分摊账单 ===');
+        await example(client);
+
     } catch (error) {
         console.error('Error:', error.message);
     }
 }
 
-async function main() {
-    // 创建客户端
-    const client = new Client(new Config({
-        apiServer: "https://kubernetes.default.svc",
-        retryCount: 3,
-        retryWait: 2
-    }));
+async function example(client) {
+    try {
+        // 获取某个DaemonSet昨天分摊集群账单的费用
+        const request = {
+            window: 'yesterday',
+            filter: 'namespace:"kube-system"+controllerKind:"DaemonSet"+label[app]:"terway-eniip"'
+        };
 
-    // 示例: 获取某个DaemonSet昨天分摊集群账单的费用
-    await example(client);
+        const response = await client.getAllocation(request);
+        console.log('Response code:', response.code);
+        
+        if (response.data) {
+            console.log('Response data:', JSON.stringify(response.data, null, 2));
+        }
+    } catch (error) {
+        console.error('Error in example:', error.message);
+    }
 }
 
-main().catch(console.error);
+// 运行示例
+main();

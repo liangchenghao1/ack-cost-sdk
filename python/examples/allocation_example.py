@@ -1,44 +1,46 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-Allocation API 使用示例
-"""
+import sys
+import os
 
-from ack_cost_sdk import Client, AllocationRequest
+# 添加项目根目录到Python路径
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from ack_cost_sdk.client import Client, Config
 
 
-def example(client):
-    """示例: 获取某个DaemonSet昨天分摊集群账单的费用"""
-    print("=== 获取DaemonSet业务分摊账单 ===")
-    
-    request = AllocationRequest(
-        window="yesterday",
-        filter='namespace:"kube-system"+controllerKind:"DaemonSet"+label[app]:"terway-eniip"'
-    )
-    
+def main():
     try:
-        response = client.allocation.get_allocation(request)
-        
-        for data in response.data:
-            for name, allocation in data.items():
-                print(f"Name: {name}, Allocation Cost: {allocation.cost:.3f}, "
-                      f"CPU Request: {allocation.cpu_core_request_average:.2f}, "
-                      f"Memory Request: {allocation.ram_byte_request_average:.0f}")
+        # 创建客户端
+        config = Config()
+        config.endpoint = 'http://127.0.0.1:8080'
+        client = Client(config)
+
+        # 示例: 获取某个DaemonSet昨天分摊集群账单的费用
+        print("=== 获取DaemonSet业务分摊账单 ===")
+        example(client)
+
     except Exception as e:
         print(f"Error: {e}")
 
 
-def main():
-    # 创建客户端
-    client = Client(
-        api_server="https://kubernetes.default.svc",
-        retry_count=3,
-        retry_wait=2
-    )
+def example(client):
+    try:
+        # 获取某个DaemonSet昨天分摊集群账单的费用
+        request = {
+            'window': 'yesterday',
+            'filter': 'namespace:"kube-system"+controllerKind:"DaemonSet"+label[app]:"terway-eniip"'
+        }
 
-    # 示例: 获取某个DaemonSet昨天分摊集群账单的费用
-    example(client)
+        response = client.get_allocation(request)
+        print(f"Response code: {response.get('code')}")
+        
+        if 'data' in response:
+            print(f"Response data: {response.get('data')}")
+
+    except Exception as e:
+        print(f"Error in example: {e}")
 
 
 if __name__ == "__main__":
