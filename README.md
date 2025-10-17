@@ -1,66 +1,30 @@
-# ACK Cost SDK
+# ACK Cost API SDK
 
-阿里云容器服务 ACK 成本 SDK，用于访问 ACK 成本相关 API。
+阿里云ACK Cost API的SDK实现，支持通过kubeconfig进行身份验证，查询Kubernetes集群中的成本分配数据。
 
 ## 支持的语言
 
-- Go
-- Java
-- JavaScript
-- Python
+| 语言 | 文档 | 示例 |
+|------|------|------|
+| **Go** | [README](go/README.md) | [cost_query_example.go](go/examples/cost_query_example.go) |
+| **Python** | [README](python/README.md) | [cost_query_example.py](python/examples/cost_query_example.py) |
+| **Java** | [README](java/README.md) | [CostQueryExample.java](java/examples/CostQueryExample.java) |
+| **JavaScript** | [README](javascript/README.md) | [cost_query_example.js](javascript/examples/cost_query_example.js) |
 
-## 快速开始
+## API 
 
-请参考各语言目录下的 README.md 文件：
+| API             | 描述 |
+|-----------------|------|
+| `Cost API`       | 用于查询实时估算成本 |
+| `Allocation API` | 用于查询业务分摊账单的成本 |
 
-- [Go SDK README](go/README.md)
-- [Java SDK README](java/README.md)
-- [JavaScript SDK README](javascript/README.md)
-- [Python SDK README](python/README.md)
 
-## 示例代码
+## 前置条件
 
-每个语言 SDK 都包含示例代码，展示如何使用 SDK 访问成本 API：
+- 集群kubeconfig文件（默认`~/.kube/config`或通过`KUBECONFIG`环境变量指定）
+- 集群已部署 Cost API服务
 
-- Go 示例: [go/examples/](go/examples/)
-- Java 示例: [java/src/main/java/com/aliyun/container/service/cost/sdk/examples/](java/src/main/java/com/aliyun/container/service/cost/sdk/examples/)
-- JavaScript 示例: [javascript/examples/](javascript/examples/)
-- Python 示例: [python/examples/](python/examples/)
-
-## FVT 测试
-
-运行 FVT 测试：
-
-```bash
-make fvt
-```
-
-运行特定语言的 FVT 测试：
-
-```bash
-make fvt-go
-make fvt-java
-make fvt-javascript
-make fvt-python
-```
-
-## 单元测试
-
-运行单元测试：
-
-```bash
-make test
-```
-
-运行特定语言的单元测试：
-
-```bash
-make test-go
-make test-java
-make test-javascript
-make test-python
-```
-
-## 许可证
+## License
 
 Apache 2.0 License
+

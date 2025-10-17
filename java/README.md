@@ -1,68 +1,122 @@
-# Java SDK for ACK Cost
+# Java SDK for ACK Cost API
 
-阿里云容器服务 ACK 成本 Java SDK，用于访问 ACK 成本相关 API。
-
-## 功能
-
-- 成本 V2 API 访问
-- Allocation API 访问
-- 配置管理
+阿里云ACK Cost API的Java语言SDK实现。
 
 ## 安装
 
-直接将源代码复制到您的项目中，或打包为 JAR 文件使用。
+### 方式1：复制源码到项目
 
-## 使用示例
+将 `src/main/java/org/openapitools/client/` 目录下的所有Java文件复制到您的项目中。
 
-### 创建客户端
-
-```java
-Config config = new Config();
-config.setEndpoint("http://127.0.0.1:8080");
-Client client = new Client(config);
-```
-
-### 获取成本数据
-
-```java
-Map<String, Object> request = new HashMap<>();
-request.put("window", "yesterday");
-request.put("filter", "namespace:\"kube-system\"+controllerKind:\"DaemonSet\"+label[app]:\"terway-eniip\"");
-
-Map<String, Object> response = client.getCostV2(request);
-```
-
-### 获取分摊数据
-
-```java
-Map<String, Object> request = new HashMap<>();
-request.put("window", "yesterday");
-request.put("filter", "namespace:\"kube-system\"+controllerKind:\"DaemonSet\"+label[app]:\"terway-eniip\"");
-
-Map<String, Object> response = client.getAllocation(request);
-```
-
-## 示例代码
-
-详细的示例代码请参考 [examples](src/main/java/com/aliyun/container/service/cost/sdk/examples/) 目录：
-
-- [CostV2Example.java](src/main/java/com/aliyun/container/service/cost/sdk/examples/CostV2Example.java) - Cost V2 API 使用示例
-- [AllocationExample.java](src/main/java/com/aliyun/container/service/cost/sdk/examples/AllocationExample.java) - Allocation API 使用示例
-
-运行示例：
+### 方式2：构建JAR包
 
 ```bash
-# 编译示例
-javac -cp "src/main/java" -d target/classes src/main/java/com/aliyun/container/service/cost/sdk/examples/CostV2Example.java
+# 构建JAR包
+mvn clean package
+
+# 将生成的JAR包添加到项目依赖
+# target/openapi-java-client-2.0.0.jar
+# target/dependency/*.jar
+```
+
+## 快速开始
+
+```java
+package examples;
+
+import org.openapitools.client.ApiClient;
+import org.openapitools.client.ApiException;
+import org.openapitools.client.Configuration;
+import org.openapitools.client.api.DefaultApi;
+import org.openapitools.client.model.AllocationSetRange;
+
+public class CostQueryExample {
+    
+    public static void main(String[] args) {
+        // 创建客户端
+        String proxyPath = "/api/v1/namespaces/kube-system/services/ack-metrics-adapter-api-service:8080/proxy";
+        ApiClient apiClient = Configuration.newApiClientWithKubeconfigAndProxy(null, proxyPath);
+        
+        System.out.println("Client created successfully!");
+        System.out.println("Server URL: " + apiClient.getBasePath());
+        
+        // 创建API实例
+        DefaultApi defaultApi = new DefaultApi(apiClient);
+        
+        // 查询成本数据
+        try {
+            AllocationSetRange response = defaultApi.getCost(
+                "1h",  // window
+                "namespace:\"kube-system\"+controllerKind:\"ReplicaSet\"+label[app]:\"ack-cost-exporter\"",  // filter
+                null, null, null, null, null, null, null  // other parameters
+            );
+            
+            // 显示结果
+            if (response != null && response.getData() != null) {
+                System.out.println("Found " + response.getData().size() + " time range data entries");
+                for (int i = 0; i < response.getData().size(); i++) {
+                    System.out.println("\nTime Range " + (i + 1) + ":");
+                    var timeRangeData = response.getData().get(i);
+                    
+                    for (var entry : timeRangeData.entrySet()) {
+                        String resourceName = entry.getKey();
+                        var allocation = entry.getValue();
+                        
+                        System.out.println("  Pod: " + resourceName);
+                        if (allocation.getCost() != null) {
+                            System.out.println("    Cost: $" + String.format("%.4f", allocation.getCost()));
+                        }
+                        if (allocation.getCpuCoreRequestAverage() != null) {
+                            System.out.println("    CPU: " + String.format("%.2f", allocation.getCpuCoreRequestAverage()) + " cores");
+                        }
+                        if (allocation.getRamByteRequestAverage() != null) {
+                            System.out.println("    RAM: " + String.format("%.2f", allocation.getRamByteRequestAverage() / (1024.0 * 1024.0)) + " MB");
+                        }
+                    }
+                }
+            }
+            
+        } catch (ApiException e) {
+            System.err.println("API call failed: " + e.getMessage());
+            System.err.println("Status code: " + e.getCode());
+        }
+    }
+}
+```
+
+## API
+
+| 方法 | 描述                             |
+|------|--------------------------------|
+| `getCost` | 调用Cost API，用于查询实时估算成本          |
+| `getAllocation` | 调用Allocation API，用于查询业务分摊账单的成本 |
+
+## 客户端创建
+
+```java
+// 使用默认 kubeconfig
+ApiClient apiClient = Configuration.newApiClientWithKubeconfigAndProxy(null, proxyPath);
+
+// 使用指定 kubeconfig
+ApiClient apiClient = Configuration.newApiClientWithKubeconfigAndProxy("/path/to/kubeconfig", proxyPath);
+
+// 直接 API 访问
+ApiClient apiClient = new ApiClient();
+apiClient.setBasePath("https://your-api-server.com");
+```
+
+## 示例
+
+```bash
+# 编译项目
+mvn clean compile
 
 # 运行示例
-java -cp "target/classes:src/main/java" com.aliyun.container.service.cost.sdk.examples.CostV2Example
+mvn exec:java -Dexec.mainClass="examples.CostQueryExample"
 ```
 
-## 测试
+## 依赖
 
-运行单元测试：
-
-```bash
-make test-java
-```
+- Java 8+
+- Maven 3.6+
+- 相关依赖请参考 `pom.xml`

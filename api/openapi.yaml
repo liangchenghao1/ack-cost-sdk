@@ -1,0 +1,399 @@
+openapi: 3.0.3
+info:
+  title: Cost API
+  version: 2.0.0
+servers:
+- url: /
+paths:
+  /v2/cost:
+    get:
+      operationId: getCost
+      parameters:
+      - description: The time range to be queried.
+        explode: true
+        in: query
+        name: window
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: The filter options for workloads.
+        explode: true
+        in: query
+        name: filter
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: The interval that is used to split the time range.
+        explode: true
+        in: query
+        name: step
+        required: false
+        schema:
+          example: 1d
+          type: string
+        style: form
+      - description: The aggregate options for the returned results from different
+          dimensions.
+        explode: true
+        in: query
+        name: aggregate
+        required: false
+        schema:
+          enum:
+          - namespace
+          - controller
+          - controllerKind
+          - node
+          - label:*
+          type: string
+        style: form
+      - description: Specifies whether to display or process idle costs.
+        explode: true
+        in: query
+        name: idle
+        required: false
+        schema:
+          default: true
+          type: boolean
+        style: form
+      - description: Specifies whether to allocate idle costs to each resource.
+        explode: true
+        in: query
+        name: shareIdle
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      - description: The idle cost allocation policy.
+        explode: true
+        in: query
+        name: shareSplit
+        required: false
+        schema:
+          default: weighted
+          enum:
+          - weighted
+          - even
+          type: string
+        style: form
+      - description: Specifies whether to aggregate idle costs of each node. This
+          parameter takes effect only if you set the aggregate parameter to node and
+          the shareIdle parameter to false.
+        explode: true
+        in: query
+        name: idleByNode
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      - description: The format that is used to export costs.
+        explode: true
+        in: query
+        name: format
+        required: false
+        schema:
+          default: json
+          enum:
+          - json
+          - csv
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AllocationSetRange"
+          description: Success
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+      summary: Get estimated cost
+  /v2/allocation:
+    get:
+      operationId: getAllocation
+      parameters:
+      - description: The time range to be queried.
+        explode: true
+        in: query
+        name: window
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: The filter options for workloads.
+        explode: true
+        in: query
+        name: filter
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: The interval that is used to split the time range.
+        explode: true
+        in: query
+        name: step
+        required: false
+        schema:
+          example: 1d
+          type: string
+        style: form
+      - description: The aggregate options for the returned results from different
+          dimensions.
+        explode: true
+        in: query
+        name: aggregate
+        required: false
+        schema:
+          enum:
+          - namespace
+          - controller
+          - controllerKind
+          - node
+          - label:*
+          type: string
+        style: form
+      - description: Specifies whether to display or process idle costs.
+        explode: true
+        in: query
+        name: idle
+        required: false
+        schema:
+          default: true
+          type: boolean
+        style: form
+      - description: Specifies whether to allocate idle costs to each resource.
+        explode: true
+        in: query
+        name: shareIdle
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      - description: The idle cost allocation policy.
+        explode: true
+        in: query
+        name: shareSplit
+        required: false
+        schema:
+          default: weighted
+          enum:
+          - weighted
+          - even
+          type: string
+        style: form
+      - description: Specifies whether to aggregate idle costs of each node. This
+          parameter takes effect only if you set the aggregate parameter to node and
+          the shareIdle parameter to false.
+        explode: true
+        in: query
+        name: idleByNode
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      - description: The format that is used to export costs.
+        explode: true
+        in: query
+        name: format
+        required: false
+        schema:
+          default: json
+          enum:
+          - json
+          - csv
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AllocationSetRange"
+          description: Success
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+      summary: Compute allocation
+components:
+  parameters:
+    WindowParam:
+      description: The time range to be queried.
+      explode: true
+      in: query
+      name: window
+      required: true
+      schema:
+        type: string
+      style: form
+    FilterParam:
+      description: The filter options for workloads.
+      explode: true
+      in: query
+      name: filter
+      required: false
+      schema:
+        type: string
+      style: form
+    StepParam:
+      description: The interval that is used to split the time range.
+      explode: true
+      in: query
+      name: step
+      required: false
+      schema:
+        example: 1d
+        type: string
+      style: form
+    AggregateParam:
+      description: The aggregate options for the returned results from different dimensions.
+      explode: true
+      in: query
+      name: aggregate
+      required: false
+      schema:
+        enum:
+        - namespace
+        - controller
+        - controllerKind
+        - node
+        - label:*
+        type: string
+      style: form
+    IdleParam:
+      description: Specifies whether to display or process idle costs.
+      explode: true
+      in: query
+      name: idle
+      required: false
+      schema:
+        default: true
+        type: boolean
+      style: form
+    ShareIdleParam:
+      description: Specifies whether to allocate idle costs to each resource.
+      explode: true
+      in: query
+      name: shareIdle
+      required: false
+      schema:
+        default: false
+        type: boolean
+      style: form
+    ShareSplitParam:
+      description: The idle cost allocation policy.
+      explode: true
+      in: query
+      name: shareSplit
+      required: false
+      schema:
+        default: weighted
+        enum:
+        - weighted
+        - even
+        type: string
+      style: form
+    IdleByNodeParam:
+      description: Specifies whether to aggregate idle costs of each node. This parameter
+        takes effect only if you set the aggregate parameter to node and the shareIdle
+        parameter to false.
+      explode: true
+      in: query
+      name: idleByNode
+      required: false
+      schema:
+        default: false
+        type: boolean
+      style: form
+    FormatParam:
+      description: The format that is used to export costs.
+      explode: true
+      in: query
+      name: format
+      required: false
+      schema:
+        default: json
+        enum:
+        - json
+        - csv
+        type: string
+      style: form
+  schemas:
+    AllocationSetRange:
+      example:
+        data:
+        - null
+        - null
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/AllocationSet"
+          type: array
+      type: object
+    AllocationSet:
+      additionalProperties:
+        $ref: "#/components/schemas/Allocation"
+      type: object
+    Allocation:
+      properties:
+        name:
+          type: string
+        properties:
+          $ref: "#/components/schemas/AllocationProperties"
+        start:
+          format: date-time
+          type: string
+        end:
+          format: date-time
+          type: string
+        cpuCoreRequestAverage:
+          format: float
+          type: number
+        cpuCoreUsageAverage:
+          format: float
+          type: number
+        ramByteRequestAverage:
+          format: float
+          type: number
+        ramByteUsageAverage:
+          format: float
+          type: number
+        cost:
+          format: float
+          type: number
+        costRatio:
+          format: float
+          type: number
+        customCost:
+          format: float
+          type: number
+      type: object
+    AllocationProperties:
+      properties:
+        cluster:
+          type: string
+        node:
+          type: string
+        controller:
+          type: string
+        controllerKind:
+          type: string
+        namespace:
+          type: string
+        pod:
+          type: string
+        labels:
+          additionalProperties:
+            type: string
+          type: object
+        providerID:
+          type: string
+      type: object
