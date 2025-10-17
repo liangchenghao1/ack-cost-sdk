@@ -1,0 +1,23 @@
+# IDE
+/.idea/
+/.vscode/
+
+# OS
+.DS_Store
+
+# Build
+*.exe
+*.deb
+
+# Python
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Java
+target/
+.mvn/wrapper/maven-wrapper.jar
+
+# Go
+go.sum
