@@ -1,23 +1,140 @@
-# IDE
-/.idea/
-/.vscode/
-
-# OS
+# 操作系统生成的文件
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
-# Build
-*.exe
-*.deb
+# IDE和编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# Python
-venv/
+# 日志文件
+*.log
+logs/
+
+# 临时文件
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# 依赖目录
+node_modules/
 __pycache__/
 *.pyc
-.pytest_cache/
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
 
-# Java
+# 构建输出
+build/
+dist/
+*.egg-info/
 target/
-.mvn/wrapper/maven-wrapper.jar
+out/
+
+# 测试覆盖率报告
+coverage/
+*.lcov
+.nyc_output/
+
+# 环境变量文件
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 证书和密钥文件
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# 配置文件（包含敏感信息）
+config.json
+secrets.json
+kubeconfig
+.kube/
+
+# 备份文件
+*.bak
+*.backup
+*.old
+
+# 压缩文件
+*.zip
+*.tar.gz
+*.rar
 
 # Go
-go.sum
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+vendor/
+
+# Python
+*.py[cod]
+__pycache__/
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+hs_err_pid*
+
+# JavaScript/Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+.cache/
+.parcel-cache/
+
+# 文档生成
+docs/_build/
+site/
+
+# 其他
+*.pid
+*.seed
+*.pid.lock
+.grunt
+bower_components
+.lock-wscript
