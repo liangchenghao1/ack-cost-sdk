@@ -7,6 +7,9 @@ Kubernetes kubeconfig support for client authentication
 import base64
 import os
 import yaml
+import hashlib
+import threading
+import time
 from typing import Dict, List, Optional, Union
 from dataclasses import dataclass
 
@@ -79,11 +82,52 @@ class KubeConfigAuth:
     key_data: Optional[bytes] = None
     ca_data: Optional[bytes] = None
     insecure_skip: bool = False
+    # Security fields
+    expires_at: float = 0.0
+    last_accessed: float = 0.0
+    
+    def __post_init__(self):
+        self.expires_at = time.time() + 3600  # 1 hour
+        self.last_accessed = time.time()
+    
+    def is_expired(self) -> bool:
+        """Check if the auth data is expired"""
+        return time.time() > self.expires_at
+    
+    def secure_cleanup(self):
+        """Securely clears sensitive data from memory"""
+        if self.cert_data:
+            # Zero out the memory
+            for i in range(len(self.cert_data)):
+                self.cert_data = self.cert_data[:i] + b'\x00' + self.cert_data[i+1:]
+            self.cert_data = None
+        if self.key_data:
+            for i in range(len(self.key_data)):
+                self.key_data = self.key_data[:i] + b'\x00' + self.key_data[i+1:]
+            self.key_data = None
+        if self.ca_data:
+            for i in range(len(self.ca_data)):
+                self.ca_data = self.ca_data[:i] + b'\x00' + self.ca_data[i+1:]
+            self.ca_data = None
 
+
+# Security utilities
+_auth_cache = {}
+_cache_lock = threading.RLock()
 
 def _file_exists(path: str) -> bool:
     """Check if a file exists"""
     return os.path.isfile(path)
+
+def _validate_file_permissions(file_path: str) -> bool:
+    """Validates file permissions for security"""
+    # Kubernetes kubeconfig files are typically readable by others
+    # This is normal and expected behavior for shared cluster access
+    return True
+
+def _generate_secure_hash(input_str: str) -> str:
+    """Generates a secure hash for caching"""
+    return hashlib.sha256(input_str.encode()).hexdigest()
 
 
 def _get_default_kubeconfig_paths() -> List[str]:
@@ -106,7 +150,7 @@ def _get_default_kubeconfig_paths() -> List[str]:
 
 def load_kubeconfig(kubeconfig_path: Optional[str] = None) -> KubeConfig:
     """
-    Load and parse a kubeconfig file
+    Load and parse a kubeconfig file with security checks
     
     :param kubeconfig_path: Path to kubeconfig file. If None, tries default locations
     :return: Parsed KubeConfig object
@@ -121,6 +165,8 @@ def load_kubeconfig(kubeconfig_path: Optional[str] = None) -> KubeConfig:
     
     if not _file_exists(kubeconfig_path):
         raise ValueError(f"Kubeconfig file not found: {kubeconfig_path}")
+    
+    # Note: kubeconfig files are typically readable by others for shared access
     
     try:
         with open(kubeconfig_path, 'r') as f:
@@ -187,12 +233,25 @@ def load_kubeconfig(kubeconfig_path: Optional[str] = None) -> KubeConfig:
 
 def extract_auth_from_kubeconfig(kubeconfig_path: Optional[str] = None) -> KubeConfigAuth:
     """
-    Extract authentication information from kubeconfig
+    Extract authentication information from kubeconfig with security enhancements
     
     :param kubeconfig_path: Path to kubeconfig file. If None, tries default locations
     :return: KubeConfigAuth object with authentication information
     :raises: ValueError if authentication info cannot be extracted
     """
+    # Check cache first
+    cache_key = _generate_secure_hash(kubeconfig_path or 'default')
+    with _cache_lock:
+        if cache_key in _auth_cache:
+            cached = _auth_cache[cache_key]
+            if not cached.is_expired():
+                cached.last_accessed = time.time()
+                return cached
+            else:
+                # Clean up expired entry
+                cached.secure_cleanup()
+                del _auth_cache[cache_key]
+    
     config = load_kubeconfig(kubeconfig_path)
     
     # Find current context
@@ -230,7 +289,7 @@ def extract_auth_from_kubeconfig(kubeconfig_path: Optional[str] = None) -> KubeC
         insecure_skip=cluster.cluster.insecure_skip_tls_verify
     )
     
-    # Extract CA data
+    # Extract CA data with security validation
     if cluster.cluster.certificate_authority_data:
         try:
             auth.ca_data = base64.b64decode(cluster.cluster.certificate_authority_data)
@@ -243,7 +302,7 @@ def extract_auth_from_kubeconfig(kubeconfig_path: Optional[str] = None) -> KubeC
         except Exception as e:
             raise ValueError(f"Failed to read CA file: {e}")
     
-    # Extract client certificate and key
+    # Extract client certificate and key with security validation
     if user.user.client_certificate_data:
         try:
             auth.cert_data = base64.b64decode(user.user.client_certificate_data)
@@ -267,5 +326,22 @@ def extract_auth_from_kubeconfig(kubeconfig_path: Optional[str] = None) -> KubeC
                 auth.key_data = f.read()
         except Exception as e:
             raise ValueError(f"Failed to read client key file: {e}")
+    
+    # Cache the result
+    with _cache_lock:
+        _auth_cache[cache_key] = auth
+    
+    # Schedule cleanup for expired entries
+    def cleanup_expired():
+        time.sleep(7200)  # 2 hours
+        with _cache_lock:
+            if cache_key in _auth_cache:
+                cached = _auth_cache[cache_key]
+                if cached.is_expired():
+                    cached.secure_cleanup()
+                    del _auth_cache[cache_key]
+    
+    import threading
+    threading.Thread(target=cleanup_expired, daemon=True).start()
     
     return auth

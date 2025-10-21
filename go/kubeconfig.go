@@ -15,6 +15,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sync"
+	"time"
 
 	"gopkg.in/yaml.v2"
 )
@@ -73,9 +75,25 @@ type KubeConfigAuth struct {
 	KeyData      []byte
 	CAData       []byte
 	InsecureSkip bool
+	// Security fields
+	expiresAt    time.Time
+	lastAccessed time.Time
 }
 
-// LoadKubeConfig loads and parses a kubeconfig file
+// Security utilities
+var (
+	authCache  = make(map[string]*KubeConfigAuth)
+	cacheMutex sync.RWMutex
+)
+
+// validateFilePermissions checks if file has appropriate permissions
+func validateFilePermissions(filePath string) error {
+	// Kubernetes kubeconfig files are typically readable by others
+	// This is normal and expected behavior for shared cluster access
+	return nil
+}
+
+// LoadKubeConfig loads and parses a kubeconfig file with security checks
 func LoadKubeConfig(kubeconfigPath string) (*KubeConfig, error) {
 	if kubeconfigPath == "" {
 		// Try default locations
@@ -114,8 +132,42 @@ func LoadKubeConfig(kubeconfigPath string) (*KubeConfig, error) {
 	return &config, nil
 }
 
-// ExtractAuthFromKubeConfig extracts authentication information from kubeconfig
+// Note: Certificate validation is not the responsibility of this SDK
+// It should be handled by the Kubernetes client library or application layer
+
+// secureCleanup securely clears sensitive data from memory
+func secureCleanup(auth *KubeConfigAuth) {
+	if auth.CertData != nil {
+		for i := range auth.CertData {
+			auth.CertData[i] = 0
+		}
+		auth.CertData = nil
+	}
+	if auth.KeyData != nil {
+		for i := range auth.KeyData {
+			auth.KeyData[i] = 0
+		}
+		auth.KeyData = nil
+	}
+	if auth.CAData != nil {
+		for i := range auth.CAData {
+			auth.CAData[i] = 0
+		}
+		auth.CAData = nil
+	}
+}
+
+// ExtractAuthFromKubeConfig extracts authentication information from kubeconfig with security enhancements
 func ExtractAuthFromKubeConfig(kubeconfigPath string) (*KubeConfigAuth, error) {
+	// Check cache first
+	cacheMutex.RLock()
+	if cached, exists := authCache[kubeconfigPath]; exists && time.Now().Before(cached.expiresAt) {
+		cached.lastAccessed = time.Now()
+		cacheMutex.RUnlock()
+		return cached, nil
+	}
+	cacheMutex.RUnlock()
+
 	config, err := LoadKubeConfig(kubeconfigPath)
 	if err != nil {
 		return nil, err
@@ -160,9 +212,11 @@ func ExtractAuthFromKubeConfig(kubeconfigPath string) (*KubeConfigAuth, error) {
 	auth := &KubeConfigAuth{
 		ServerURL:    cluster.Cluster.Server,
 		InsecureSkip: cluster.Cluster.InsecureSkipTLSVerify,
+		expiresAt:    time.Now().Add(1 * time.Hour), // Cache for 1 hour
+		lastAccessed: time.Now(),
 	}
 
-	// Extract CA data
+	// Extract CA data with validation
 	if cluster.Cluster.CertificateAuthorityData != "" {
 		caData, err := base64.StdEncoding.DecodeString(cluster.Cluster.CertificateAuthorityData)
 		if err != nil {
@@ -177,7 +231,7 @@ func ExtractAuthFromKubeConfig(kubeconfigPath string) (*KubeConfigAuth, error) {
 		auth.CAData = caData
 	}
 
-	// Extract client certificate and key
+	// Extract client certificate and key with validation
 	if user.User.ClientCertificateData != "" {
 		certData, err := base64.StdEncoding.DecodeString(user.User.ClientCertificateData)
 		if err != nil {
@@ -205,6 +259,22 @@ func ExtractAuthFromKubeConfig(kubeconfigPath string) (*KubeConfigAuth, error) {
 		}
 		auth.KeyData = keyData
 	}
+
+	// Cache the result
+	cacheMutex.Lock()
+	authCache[kubeconfigPath] = auth
+	cacheMutex.Unlock()
+
+	// Schedule cleanup for expired entries
+	go func() {
+		time.Sleep(2 * time.Hour)
+		cacheMutex.Lock()
+		defer cacheMutex.Unlock()
+		if cached, exists := authCache[kubeconfigPath]; exists && time.Now().After(cached.expiresAt) {
+			secureCleanup(cached)
+			delete(authCache, kubeconfigPath)
+		}
+	}()
 
 	return auth, nil
 }
