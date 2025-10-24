@@ -58,7 +58,7 @@ async function main() {
                 for (const [resourceName, allocation] of Object.entries(dataItem)) {
                     console.log(`  Pod: ${resourceName}`);
                     if (allocation.cost !== undefined) {
-                        console.log(`    Cost: $${allocation.cost.toFixed(4)}`);
+                        console.log(`    Cost: ${allocation.cost.toFixed(4)}`);
                     }
                     if (allocation.cpuCoreRequestAverage !== undefined) {
                         console.log(`    CPU: ${allocation.cpuCoreRequestAverage.toFixed(2)} cores`);

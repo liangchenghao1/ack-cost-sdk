@@ -98,13 +98,13 @@ public class CostQueryExample {
                                 
                                 // Display cost information
                                 if (allocation.getCost() != null) {
-                                    System.out.println("       Cost: $" + String.format("%.4f", allocation.getCost()));
+                                    System.out.println("       Cost: " + String.format("%.4f", allocation.getCost()));
                                 }
                                 if (allocation.getCostRatio() != null) {
                                     System.out.println("       Cost Ratio: " + String.format("%.2f", allocation.getCostRatio() * 100) + "%");
                                 }
                                 if (allocation.getCustomCost() != null) {
-                                    System.out.println("       Custom Cost: $" + String.format("%.4f", allocation.getCustomCost()));
+                                    System.out.println("       Custom Cost: " + String.format("%.4f", allocation.getCustomCost()));
                                 }
                                 
                                 // Display properties if available
@@ -163,7 +163,7 @@ public class CostQueryExample {
                                 // Display cost information
                                 Object costObj = allocation.get("cost");
                                 if (costObj != null) {
-                                    System.out.println("       Cost: $" + String.format("%.4f", ((Number) costObj).doubleValue()));
+                                    System.out.println("       Cost: " + String.format("%.4f", ((Number) costObj).doubleValue()));
                                 }
                                 Object costRatioObj = allocation.get("costRatio");
                                 if (costRatioObj != null) {
@@ -171,7 +171,7 @@ public class CostQueryExample {
                                 }
                                 Object customCostObj = allocation.get("customCost");
                                 if (customCostObj != null) {
-                                    System.out.println("       Custom Cost: $" + String.format("%.4f", ((Number) customCostObj).doubleValue()));
+                                    System.out.println("       Custom Cost: " + String.format("%.4f", ((Number) customCostObj).doubleValue()));
                                 }
                                 
                                 // Display properties if available

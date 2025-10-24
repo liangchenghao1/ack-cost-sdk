@@ -125,13 +125,13 @@ async function queryCostData() {
                             
                             // Display cost information
                             if (allocation.cost !== undefined) {
-                                console.log(`       Cost: $${allocation.cost.toFixed(4)}`);
+                                console.log(`       Cost: ${allocation.cost.toFixed(4)}`);
                             }
                             if (allocation.costRatio !== undefined) {
                                 console.log(`       Cost Ratio: ${(allocation.costRatio * 100).toFixed(2)}%`);
                             }
                             if (allocation.customCost !== undefined) {
-                                console.log(`       Custom Cost: $${allocation.customCost.toFixed(4)}`);
+                                console.log(`       Custom Cost: ${allocation.customCost.toFixed(4)}`);
                             }
                             
                             // Display properties if available

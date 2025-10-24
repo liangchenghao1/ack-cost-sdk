@@ -48,7 +48,7 @@ func main() {
             for podName, allocation := range timeRangeData {
                 fmt.Printf("  Pod: %s\n", podName)
                 if allocation.HasCost() {
-                    fmt.Printf("    Cost: $%.4f\n", allocation.GetCost())
+                    fmt.Printf("    Cost: %.4f\n", allocation.GetCost())
                 }
                 if allocation.HasCpuCoreRequestAverage() {
                     fmt.Printf("    CPU: %.2f cores\n", allocation.GetCpuCoreRequestAverage())

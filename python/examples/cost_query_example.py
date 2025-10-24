@@ -105,11 +105,11 @@ def query_cost_data():
                                     
                                     # Display cost information
                                     if allocation.get('cost'):
-                                        print(f"       Cost: ${allocation['cost']:.4f}")
+                                        print(f"       Cost: {allocation['cost']:.4f}")
                                     if allocation.get('costRatio'):
                                         print(f"       Cost Ratio: {allocation['costRatio']*100:.2f}%")
                                     if allocation.get('customCost'):
-                                        print(f"       Custom Cost: ${allocation['customCost']:.4f}")
+                                        print(f"       Custom Cost: {allocation['customCost']:.4f}")
                                     
                                     # Display properties if available
                                     if allocation.get('properties'):
@@ -127,7 +127,7 @@ def query_cost_data():
                                             print(f"         Cluster: {props['cluster']}")
                         
                         print(f"\nTotal: {total_resources} resource allocations")
-                        print(f"Total Cost: ${total_cost:.6f}")
+                        print(f"Total Cost: {total_cost:.6f}")
                     elif isinstance(data, dict):
                         print(f"   - Found {len(data)} resource allocations")
                         total_cost = 0
@@ -157,11 +157,11 @@ def query_cost_data():
                             
                             # Display cost information
                             if allocation.get('cost'):
-                                print(f"       Cost: ${allocation['cost']:.4f}")
+                                print(f"       Cost: {allocation['cost']:.4f}")
                             if allocation.get('costRatio'):
                                 print(f"       Cost Ratio: {allocation['costRatio']*100:.2f}%")
                             if allocation.get('customCost'):
-                                print(f"       Custom Cost: ${allocation['customCost']:.4f}")
+                                print(f"       Custom Cost: {allocation['customCost']:.4f}")
                             
                             # Display properties if available
                             if allocation.get('properties'):
@@ -178,7 +178,7 @@ def query_cost_data():
                                 if props.get('cluster'):
                                     print(f"         Cluster: {props['cluster']}")
                         
-                        print(f"\nTotal Cost: ${total_cost:.6f}")
+                        print(f"\nTotal Cost: {total_cost:.6f}")
                     else:
                         print(f"   - Unknown data structure: {type(data)}")
                         print(f"   - Data content: {data}")

@@ -44,7 +44,7 @@ def main():
                 for resource_name, allocation in time_range_data.items():
                     print(f"  Pod: {resource_name}")
                     if allocation.cost is not None:
-                        print(f"    Cost: ${allocation.cost:.4f}")
+                        print(f"    Cost: {allocation.cost:.4f}")
                     if allocation.cpu_core_request_average is not None:
                         print(f"    CPU: {allocation.cpu_core_request_average:.2f} cores")
                     if allocation.ram_byte_request_average is not None:

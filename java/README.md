@@ -64,7 +64,7 @@ public class CostQueryExample {
                         
                         System.out.println("  Pod: " + resourceName);
                         if (allocation.getCost() != null) {
-                            System.out.println("    Cost: $" + String.format("%.4f", allocation.getCost()));
+                            System.out.println("    Cost: " + String.format("%.4f", allocation.getCost()));
                         }
                         if (allocation.getCpuCoreRequestAverage() != null) {
                             System.out.println("    CPU: " + String.format("%.2f", allocation.getCpuCoreRequestAverage()) + " cores");

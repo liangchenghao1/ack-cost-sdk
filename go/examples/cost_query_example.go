@@ -78,13 +78,13 @@ func main() {
 
 					// Display cost information
 					if allocation.HasCost() {
-						fmt.Printf("       Cost: $%.4f\n", allocation.GetCost())
+						fmt.Printf("       Cost: %.4f\n", allocation.GetCost())
 					}
 					if allocation.HasCostRatio() {
 						fmt.Printf("       Cost Ratio: %.2f%%\n", allocation.GetCostRatio()*100)
 					}
 					if allocation.HasCustomCost() {
-						fmt.Printf("       Custom Cost: $%.4f\n", allocation.GetCustomCost())
+						fmt.Printf("       Custom Cost: %.4f\n", allocation.GetCustomCost())
 					}
 
 					// Display properties if available
